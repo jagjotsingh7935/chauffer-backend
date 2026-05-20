@@ -24,29 +24,19 @@ load_dotenv()
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    'localhost:5173',
-    'www.rituveda.com',
-    'rituveda.com'
+    'localhost:8080',
     ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    "http://localhost:8080",
     'https://rituveda.com',
-    'https://www.rituveda.com',
     ]
 
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://rituveda.com',
-    'https://www.rituveda.com',
-    "https://rituveda.com/oauth2callback",
-    "https://www.googleapis.com/auth/calendar.events",
-    "https://www.googleapis.com/oauth2/v1/certs",
-    "https://accounts.google.com/o/oauth2/auth",
-    "https://oauth2.googleapis.com/token",
     "http://127.0.0.1:8000",
-    "http://localhost:5173",
+    "http://localhost:8080",
     ]
 
 
@@ -74,9 +64,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
+    'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
+    'accounts',
+    'chauffer',
 ]
 
 MIDDLEWARE = [
@@ -95,7 +88,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,13 +114,15 @@ DATABASES = {
     }
 }
 
-
-
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
@@ -136,11 +131,7 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'accounts.User'
 
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-}
+
 
 
 # Password validation

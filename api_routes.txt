@@ -1,0 +1,195 @@
+================================================================================
+                        TAXI BOOKING SYSTEM - API CURL COMMANDS
+================================================================================
+
+BASE URL: http://your-domain.com/api/
+
+-------------------------------------------------------------------------------
+AUTHENTICATION (accounts app)
+-------------------------------------------------------------------------------
+
+1. REGISTER new user (customer or admin)
+   POST /auth/register/
+   Description: Create a new user account. Returns user data + JWT tokens.
+   curl -X POST http://your-domain.com/api/auth/register/ \
+        -H "Content-Type: application/json" \
+        -d '{"username":"john","email":"john@example.com","password":"secure123","phone":"9876543210","address":"123 Street"}'
+
+2. LOGIN (get JWT tokens)
+   POST /auth/api/token/
+   Description: Authenticate user with username/password. Returns access & refresh tokens.
+   curl -X POST http://your-domain.com/api/auth/api/token/ \
+        -H "Content-Type: application/json" \
+        -d '{"username":"john","password":"secure123"}'
+
+3. REFRESH JWT token
+   POST /auth/api/token/refresh/
+   Description: Get a new access token using refresh token.
+   curl -X POST http://your-domain.com/api/auth/api/token/refresh/ \
+        -H "Content-Type: application/json" \
+        -d '{"refresh":"your_refresh_token"}'
+
+4. GET current logged-in user (me)
+   GET /auth/me/
+   Description: Fetch details of the authenticated user (admin or customer). Requires token.
+   curl -X GET http://your-domain.com/api/auth/me/ \
+        -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+-------------------------------------------------------------------------------
+PUBLIC ENDPOINTS (No authentication required)
+-------------------------------------------------------------------------------
+
+5. List all active car types (public)
+   GET /car-types/
+   Description: Retrieve all car types (sedan, SUV, etc.) with capacity and base price.
+   curl -X GET http://your-domain.com/api/car-types/
+
+6. List all predefined routes (public)
+   GET /routes/
+   Description: Get all available pickup-drop routes (e.g., "Airport → City").
+   curl -X GET http://your-domain.com/api/routes/
+
+7. Check fare for a route + car type (public)
+   GET /fares/?route=1&car_type=2
+   Description: Get the standard price for a specific route and car type.
+   curl -X GET "http://your-domain.com/api/fares/?route=1&car_type=2"
+
+8. List recurring schedules (public)
+   GET /recurring-schedules/?route=1&car_type=2&day_of_week=1
+   Description: Show lifelong availability for a route/car on a given weekday (0=Mon...6=Sun).
+   curl -X GET "http://your-domain.com/api/recurring-schedules/?route=1&car_type=2"
+
+9. List schedule exceptions (public)
+   GET /schedule-exceptions/?exception_date=2025-12-25
+   Description: Get special availability or unavailability for specific dates.
+   curl -X GET "http://your-domain.com/api/schedule-exceptions/?exception_date=2025-12-25"
+
+10. Create a new booking enquiry (public - no token needed)
+    POST /enquiries/
+    Description: Submit a booking request (predefined or custom route). Can include additional passengers, proposed price.
+    curl -X POST http://your-domain.com/api/enquiries/ \
+         -H "Content-Type: application/json" \
+         -d '{
+               "name": "John Doe",
+               "email": "john@example.com",
+               "phone": "9876543210",
+               "address": "Home address",
+               "pickup_location": "Airport",
+               "drop_location": "City Center",
+               "travel_date": "2025-12-25",
+               "travel_time": "10:00:00",
+               "description": "Need child seat",
+               "proposed_price": "1200.00",
+               "route": null,
+               "car_type": 1,
+               "driver": null,
+               "additional_passengers": [
+                 {"name": "Jane", "age": 30},
+                 {"name": "Mike", "age": 25}
+               ]
+             }'
+
+-------------------------------------------------------------------------------
+ADMIN / AUTHENTICATED ENDPOINTS (Require JWT token + admin permission for most)
+-------------------------------------------------------------------------------
+
+11. List all enquiries (admin)
+    GET /enquiries/
+    Description: View all customer enquiries with filters (status, date, route).
+    curl -X GET "http://your-domain.com/api/enquiries/?status=PENDING" \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+12. Retrieve a single enquiry
+    GET /enquiries/{id}/
+    Description: Get details of one enquiry by ID.
+    curl -X GET http://your-domain.com/api/enquiries/1/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+13. Accept an enquiry (admin)
+    POST /enquiries/{id}/accept/
+    Description: Accept a pending enquiry. Requires booked_price and optional driver_id. Creates booking & sends email.
+    curl -X POST http://your-domain.com/api/enquiries/1/accept/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+         -H "Content-Type: application/json" \
+         -d '{"booked_price": "1500.00", "driver_id": 2}'
+
+14. Reject an enquiry (admin)
+    POST /enquiries/{id}/reject/
+    Description: Reject a pending enquiry with a reason.
+    curl -X POST http://your-domain.com/api/enquiries/1/reject/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+         -H "Content-Type: application/json" \
+         -d '{"reason": "No drivers available"}'
+
+15. List all bookings (admin)
+    GET /bookings/
+    Description: View all confirmed bookings.
+    curl -X GET http://your-domain.com/api/bookings/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+16. List all drivers (admin)
+    GET /drivers/
+    Description: Retrieve driver list with availability status.
+    curl -X GET http://your-domain.com/api/drivers/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+17. Create/update driver (admin)
+    POST /drivers/ , PUT /drivers/{id}/
+    Description: Add or modify driver information.
+    curl -X POST http://your-domain.com/api/drivers/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+         -H "Content-Type: application/json" \
+         -d '{"name":"Raj","phone":"9988776655","license_number":"DL123","assigned_car_type":1,"is_available":true}'
+
+18. List all payments (admin)
+    GET /payments/
+    Description: View payment transactions.
+    curl -X GET http://your-domain.com/api/payments/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+19. Manage fares (admin) - CRUD
+    GET /fares/ , POST /fares/ , PUT /fares/{id}/ , DELETE /fares/{id}/
+    Description: Set or update standard prices for route+car_type.
+    curl -X POST http://your-domain.com/api/fares/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+         -H "Content-Type: application/json" \
+         -d '{"route": 1, "car_type": 1, "price": "1800.00"}'
+
+20. Manage recurring schedules (admin)
+    POST /recurring-schedules/
+    Description: Create lifelong schedule (e.g., every Monday 9AM-5PM).
+    curl -X POST http://your-domain.com/api/recurring-schedules/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+         -H "Content-Type: application/json" \
+         -d '{"route":1,"car_type":1,"day_of_week":0,"start_time":"09:00:00","end_time":"17:00:00","price_override":"2000"}'
+
+21. Manage schedule exceptions (admin)
+    POST /schedule-exceptions/
+    Description: Override availability for a specific date (e.g., closed on holiday).
+    curl -X POST http://your-domain.com/api/schedule-exceptions/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+         -H "Content-Type: application/json" \
+         -d '{"route":1,"car_type":1,"exception_date":"2025-12-25","is_available":false,"reason":"Christmas"}'
+
+22. List all car types (admin)
+    GET /car-types/
+    Description: Admin view of car types (including inactive ones if needed).
+    curl -X GET http://your-domain.com/api/car-types/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+23. Manage routes (admin) - CRUD
+    POST /routes/
+    Description: Create predefined routes (pickup/drop).
+    curl -X POST http://your-domain.com/api/routes/ \
+         -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+         -H "Content-Type: application/json" \
+         -d '{"pickup_location":"Railway Station","drop_location":"Hotel Plaza","distance":12.5,"is_active":true}'
+
+================================================================================
+NOTES:
+- Replace YOUR_ACCESS_TOKEN with actual JWT token from login endpoint.
+- Public endpoints do not require token.
+- Admin endpoints require user with is_admin=True (set in database or via register).
+- For custom routes, set "route": null in enquiry creation.
+- Use http://localhost:8000/api/ for local development.
+================================================================================

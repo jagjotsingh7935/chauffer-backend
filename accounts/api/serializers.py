@@ -1,50 +1,25 @@
 from rest_framework import serializers
-from accounts.models import *
+from accounts.models import User
 
-class CarTypeSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CarType
-        fields = '__all__'
+        model = User
+        fields = ['id', 'username', 'email', 'phone', 'address', 'is_admin']
 
 
-class RouteSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
-        model = Route
-        fields = '__all__'
+        model = User
+        fields = ['username', 'email', 'password', 'phone', 'address']
 
-
-class FareSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Fare
-        fields = '__all__'
-
-
-class ScheduleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Schedule
-        fields = '__all__'
-
-
-class EnquirySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Enquiry
-        fields = '__all__'
-        read_only_fields = ['status']
-
-
-class BookingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = '__all__'
-
-
-class DriverSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Driver
-        fields = '__all__'
-
-
-class PaymentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Payment
-        fields = '__all__'
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email'),
+            password=validated_data['password'],
+            phone=validated_data.get('phone', ''),
+            address=validated_data.get('address', '')
+        )
+        return user
