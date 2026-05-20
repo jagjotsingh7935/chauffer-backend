@@ -1,2 +1,10 @@
 .env
 db.sqlite3
+__pycache__/
+*.py[cod]
+
+db.sqlite3
+.env
+
+*/migrations/*.py
+!*/migrations/__init__.py
