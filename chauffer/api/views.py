@@ -112,8 +112,12 @@ class EnquiryViewSet(viewsets.ModelViewSet):
         # Create booking
         Booking.objects.create(enquiry=enquiry, confirmed_price=booked_price)
 
-        # Send acceptance email
+        # Send email to customer
         self._send_accept_reject_email(enquiry, 'ACCEPTED')
+        # Send email to driver if assigned and has email
+        if enquiry.driver and enquiry.driver.email:
+            self._send_driver_email(enquiry)
+
         return Response({"message": "Enquiry accepted", "booked_price": str(booked_price)})
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
@@ -129,6 +133,32 @@ class EnquiryViewSet(viewsets.ModelViewSet):
 
         self._send_accept_reject_email(enquiry, 'REJECTED', reason)
         return Response({"message": "Enquiry rejected"})
+
+    
+    def _send_driver_email(self, enquiry):
+        """Send booking confirmation to driver"""
+        subject = "New Booking Assignment"
+        message = f"""
+        Dear {enquiry.driver.name},
+
+        You have been assigned a new booking.
+
+        Customer: {enquiry.name}
+        Phone: {enquiry.phone}
+        Pickup: {enquiry.pickup_location}
+        Drop: {enquiry.drop_location}
+        Travel Date: {enquiry.travel_date} {enquiry.travel_time}
+        Booked Price: ₹{enquiry.booked_price}
+
+        Please contact the customer for further details.
+        """
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [enquiry.driver.email],
+            fail_silently=True
+        )
 
     def _send_accept_reject_email(self, enquiry, status, reason=""):
         if status == 'ACCEPTED':

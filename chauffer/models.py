@@ -130,6 +130,7 @@ class Booking(models.Model):
 
 class Driver(models.Model):
     name = models.CharField(max_length=255)
+    email = models.EmailField(blank=True, null=True)  
     phone = models.CharField(max_length=20)
     license_number = models.CharField(max_length=100)
     assigned_car_type = models.ForeignKey(CarType, on_delete=models.SET_NULL, null=True)
